@@ -41,6 +41,12 @@ class Chef
        :boolean => true,
        :description => "Use the git@ style url. Defaults to true if $USER matches user/repo"
 
+      option :https,
+       :short => "-H",
+       :long => "--https",
+       :boolean => true,
+       :description => "Use the HTTPS url. Slower, but will work through most firewalls."
+
       option :cookbook_path,
         :short => "-o PATH:PATH",
         :long => "--cookbook-path PATH:PATH",
@@ -77,7 +83,7 @@ class Chef
         @repo.sanity_check
         @repo.reset_to_default_state
         @repo.prepare_to_import(@cookbook_name)
-
+	
         clone_cookbook
         clear_existing_files(File.join(@install_path, @cookbook_name))
         move_cookbook
@@ -135,13 +141,16 @@ class Chef
       def github_uri
         if config[:ssh] || @github_user == ENV['USER']
           "git@github.com:#{@github_user}/#{@github_repo}.git"
+        elsif config[:https]
+          "https://github.com/#{@github_user}/#{@github_repo}.git"
         else
           "git://github.com/#{@github_user}/#{@github_repo}.git"
         end
       end
 
       def sha
-        @sha ||= noauth_rest.get_rest("http://github.com/api/v2/json/repos/show/#{@github_user}/#{@github_repo}/branches")['branches'][github_branch]
+        @sha ||= noauth_rest.get_rest("https://api.github.com/repos/#{@github_user}/#{@github_repo}/branches/#{@github_branch}")["commit"]["sha"]
+        puts @sha
       end
 
       def github_branch
