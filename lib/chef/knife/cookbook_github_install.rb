@@ -150,7 +150,6 @@ class Chef
 
       def sha
         @sha ||= noauth_rest.get_rest("https://api.github.com/repos/#{@github_user}/#{@github_repo}/branches/#{@github_branch}")["commit"]["sha"]
-        puts @sha
       end
 
       def github_branch
